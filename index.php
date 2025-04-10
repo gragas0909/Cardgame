@@ -15,7 +15,7 @@ session_start();
         <p id="coin-balance">Coin Balance: 0</p>
     </div>
     <div class="game-container">
-        <h1>Blackjack Game</h1>
+        <h1>Crazy Blackjack</h1>
         <div class="player-hand">
             <h2>Player's Hand:</h2>
             <p id="player-hand-value"></p>

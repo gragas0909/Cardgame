@@ -65,77 +65,79 @@ class Card {
 }
 
 // === Special Cards ===
-class SkipCard extends Card {
-    constructor() {
-        super('Special', 'Skip');
-    }
-
-    getValue() {
-        return 0;
+class SpecialCard extends Card {
+    constructor(rank, description) {
+        super('Special', rank);
+        this.description = description;
     }
 
     getCoinValue() {
         return 0;
     }
 
+    getHTML() {
+        return `
+            <div class="card special">
+                <div class="rank">${this.rank}</div>
+                <div class="suit">Special</div>
+                    <span class="tooltiptext">${this.description}</span>
+                </div>
+            </div>
+        `;
+    }
+
     isSpecial() {
         return true;
     }
 }
 
-class DoubleCard extends Card {
+class SkipCard extends SpecialCard {
     constructor() {
-        super('Special', 'Double');
+        super('Skip', 'Skips the dealer’s turn.');
     }
 
     getValue() {
         return 0;
     }
-
-    isSpecial() {
-        return true;
-    }
 }
 
-class StealCard extends Card {
+class DoubleCard extends SpecialCard {
     constructor() {
-        super('Special', 'Steal');
+        super('Double', 'Doubles the coin reward if player wins.');
     }
 
     getValue() {
         return 0;
     }
+}
 
-    isSpecial() {
-        return true;
+class StealCard extends SpecialCard {
+    constructor() {
+        super('Steal', 'Steals coins from the dealer.');
+    }
+
+    getValue() {
+        return 0;
     }
 }
 
-class WildCard extends Card {
+class WildCard extends SpecialCard {
     constructor() {
-        super('Special', 'Wild');
+        super('Wild', 'Adds 5 to your total value.');
     }
 
     getValue() {
         return 5;
     }
-
-    isSpecial() {
-        return true;
-    }
 }
 
-class ReverseCard extends Card {
+class ReverseCard extends SpecialCard {
     constructor() {
-        super('Special', 'Reverse');
+        super('Reverse', 'Reverses the turn order.');
     }
 
     getValue() {
         return 0;
-    }
-
-    isSpecial() {
-        return true;
     }
 }
 

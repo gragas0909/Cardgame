@@ -66,9 +66,10 @@ class Card {
 
 // === Special Cards ===
 class SpecialCard extends Card {
-    constructor(rank, description) {
+    constructor(rank, description, longDescription) {
         super('Special', rank);
         this.description = description;
+        this.longDescription = longDescription;
     }
 
     getCoinValue() {
@@ -80,8 +81,11 @@ class SpecialCard extends Card {
             <div class="card special">
                 <div class="rank">${this.rank}</div>
                 <div class="suit">Special</div>
-                    <span class="tooltiptext">${this.description}</span>
-                </div>
+                <span class="tooltiptext">
+                    ${this.description}
+                    <br><br>
+                    ${this.longDescription}
+                </span>
             </div>
         `;
     }
@@ -91,29 +95,50 @@ class SpecialCard extends Card {
     }
 }
 
-class SkipCard extends SpecialCard {
+class HiddenCard extends SpecialCard {
     constructor() {
-        super('Skip', 'Skips the dealer’s turn.');
+        super('?', 'Hidden Value', 'Acts as a normal valued card, but its value remains hidden until the end of the round.');
+        this.hiddenValue = Math.floor(Math.random() * 10) + 1; // Assign a random value between 1 and 10
+        this.revealed = false;
     }
 
     getValue() {
-        return 0;
+        return this.revealed ? this.hiddenValue : 0; // Return 0 until revealed
+    }
+
+    reveal() {
+        this.revealed = true;
+    }
+
+    getHTML() {
+        const displayRank = this.revealed ? this.hiddenValue : '?';
+        return `
+            <div class="card special">
+                <div class="rank">${displayRank}</div>
+                <div class="suit">Special</div>
+                <span class="tooltiptext">
+                    ${this.description}
+                    <br><br>
+                    ${this.longDescription}
+                </span>
+            </div>
+        `;
     }
 }
 
-class DoubleCard extends SpecialCard {
+class AllUpCard extends SpecialCard {
     constructor() {
-        super('Double', 'Doubles the coin reward if player wins.');
+        super('All Up!', 'Value Boost', 'Increases the value of all cards played by the player so far this round by 2.');
     }
 
     getValue() {
-        return 0;
+        return 0; // This card doesn't have an inherent value.
     }
 }
 
 class StealCard extends SpecialCard {
     constructor() {
-        super('Steal', 'Steals coins from the dealer.');
+        super('Steal', 'Coin Steal', 'Steals coins from the dealer.');
     }
 
     getValue() {
@@ -123,21 +148,12 @@ class StealCard extends SpecialCard {
 
 class WildCard extends SpecialCard {
     constructor() {
-        super('Wild', 'Adds 5 to your total value.');
+        super('Wild', 'Random Value', 'Adds a random value (1-10) to your total.');
+        this.randomValue = Math.floor(Math.random() * 10) + 1;
     }
 
     getValue() {
-        return 5;
-    }
-}
-
-class ReverseCard extends SpecialCard {
-    constructor() {
-        super('Reverse', 'Reverses the turn order.');
-    }
-
-    getValue() {
-        return 0;
+        return this.randomValue;
     }
 }
 
@@ -151,9 +167,8 @@ class Deck {
             }
         }
         this.specialCards = [
-            new SkipCard(), new DoubleCard(),
             new StealCard(), new WildCard(),
-            new ReverseCard()
+            new HiddenCard(), new AllUpCard()
         ];
     }
 
@@ -178,17 +193,25 @@ class Deck {
 class Hand {
     constructor() {
         this.cards = [];
+        this.allUpActive = false;
     }
 
     addCard(card) {
         this.cards.push(card);
+        if (card instanceof AllUpCard) {
+            this.allUpActive = true;
+        }
     }
 
     getTotalValue() {
         let total = 0;
         let aces = 0;
         for (let card of this.cards) {
-            total += card.getValue();
+            let cardValue = card.getValue();
+            if (this.allUpActive && !card.isSpecial()) {
+                cardValue += 2;
+            }
+            total += cardValue;
             if (card.rank === 'Ace') aces++;
         }
         while (total > 21 && aces) {
@@ -208,6 +231,15 @@ class Hand {
 
     clear() {
         this.cards = [];
+        this.allUpActive = false;
+    }
+
+    revealHiddenCards() {
+        this.cards.forEach(card => {
+            if (card instanceof HiddenCard) {
+                card.reveal();
+            }
+        });
     }
 }
 
@@ -343,6 +375,12 @@ class Game {
         while (this.dealer.getHandValue() < 17) {
             this.dealer.hit(this.deck);
         }
+
+        // Reveal hidden cards before determining the winner
+        this.player.hand.revealHiddenCards();
+        document.getElementById('player-cards').innerHTML = this.player.getHandHTML();
+        document.getElementById('player-hand-value').textContent = `Total: ${this.player.getHandValue()}`;
+
         document.getElementById('dealer-hand-value').textContent = `Total: ${this.dealer.getHandValue()}`;
         document.getElementById('dealer-cards').innerHTML = this.dealer.hand.getHTML();
         const playerTotal = this.player.getHandValue();

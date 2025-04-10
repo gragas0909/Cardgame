@@ -1,0 +1,65 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0b3d0b; /* deep green casino table */
+    color: #fff;
+}
+
+.register-container {
+    max-width: 400px;
+    margin: 100px auto 20px;
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+
+#register-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#register-form label {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+#register-form input {
+    width: 100%;
+    height: 40px;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background-color: #fff;
+    color: #000;
+    font-size: 16px;
+}
+
+#register-button {
+    width: 150px;
+    height: 40px;
+    margin: 10px;
+    border: none;
+    border-radius: 10px;
+    background-color: #ffd700;
+    color: #000;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#register-button:hover {
+    background-color: #ffc400;
+    transform: translateY(-2px);
+}
+
+#register-message {
+    font-size: 18px;
+    color: #fff;
+}

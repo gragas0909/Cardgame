@@ -1,7 +1,6 @@
-
+// === Constants ===
 const ranks = ['Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King'];
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
-
 
 const cardValues = {
     'Ace': 11,
@@ -19,7 +18,6 @@ const cardValues = {
     'King': 10
 };
 
-
 const cardCoinValues = {
     'Ace': 10,
     '2': 2,
@@ -36,6 +34,7 @@ const cardCoinValues = {
     'King': 40
 };
 
+// === Base Card Class ===
 class Card {
     constructor(suit, rank) {
         this.suit = suit;
@@ -51,7 +50,6 @@ class Card {
     }
 
     getHTML() {
-        
         return `
             <div class="card">
                 <div class="rank">${this.rank}</div>
@@ -60,10 +58,88 @@ class Card {
             </div>
         `;
     }
+
+    isSpecial() {
+        return false;
+    }
 }
 
+// === Special Cards ===
+class SkipCard extends Card {
+    constructor() {
+        super('Special', 'Skip');
+    }
 
+    getValue() {
+        return 0;
+    }
 
+    getCoinValue() {
+        return 0;
+    }
+
+    isSpecial() {
+        return true;
+    }
+}
+
+class DoubleCard extends Card {
+    constructor() {
+        super('Special', 'Double');
+    }
+
+    getValue() {
+        return 0;
+    }
+
+    isSpecial() {
+        return true;
+    }
+}
+
+class StealCard extends Card {
+    constructor() {
+        super('Special', 'Steal');
+    }
+
+    getValue() {
+        return 0;
+    }
+
+    isSpecial() {
+        return true;
+    }
+}
+
+class WildCard extends Card {
+    constructor() {
+        super('Special', 'Wild');
+    }
+
+    getValue() {
+        return 5;
+    }
+
+    isSpecial() {
+        return true;
+    }
+}
+
+class ReverseCard extends Card {
+    constructor() {
+        super('Special', 'Reverse');
+    }
+
+    getValue() {
+        return 0;
+    }
+
+    isSpecial() {
+        return true;
+    }
+}
+
+// === Deck ===
 class Deck {
     constructor() {
         this.cards = [];
@@ -72,6 +148,11 @@ class Deck {
                 this.cards.push(new Card(suit, rank));
             }
         }
+        this.specialCards = [
+            new SkipCard(), new DoubleCard(),
+            new StealCard(), new WildCard(),
+            new ReverseCard()
+        ];
     }
 
     shuffle() {
@@ -84,8 +165,14 @@ class Deck {
     dealCard() {
         return this.cards.pop();
     }
+
+    dealSpecialCard() {
+        if (this.specialCards.length === 0) return null;
+        return this.specialCards.pop();
+    }
 }
 
+// === Hand ===
 class Hand {
     constructor() {
         this.cards = [];
@@ -122,6 +209,7 @@ class Hand {
     }
 }
 
+// === Player ===
 class Player {
     constructor(name) {
         this.name = name;
@@ -130,7 +218,10 @@ class Player {
     }
 
     hit(deck) {
-        this.hand.addCard(deck.dealCard());
+        const chance = Math.random();
+        let card = chance < 0.3 ? deck.dealSpecialCard() : null;
+        if (!card) card = deck.dealCard();
+        this.hand.addCard(card);
     }
 
     getHandHTML() {
@@ -151,6 +242,7 @@ class Player {
     }
 }
 
+// === Dealer ===
 class Dealer {
     constructor() {
         this.hand = new Hand();
@@ -181,15 +273,14 @@ class Dealer {
     }
 }
 
+// === Game ===
 class Game {
     constructor() {
         this.deck = new Deck();
         this.deck.shuffle();
         this.player = new Player('Player');
         this.dealer = new Dealer();
-        this.round = 0;
 
-        
         this.hitHandler = this.hitHandler.bind(this);
         this.standHandler = this.standHandler.bind(this);
         this.newGameHandler = this.newGameHandler.bind(this);
@@ -219,7 +310,6 @@ class Game {
         document.getElementById('dealer-cards').innerHTML = this.dealer.getHandHTML();
 
         this.player.updateCoinBalance(100);
-        this.round = 0;
     }
 
     setupEventListeners() {
@@ -278,6 +368,6 @@ class Game {
     }
 }
 
-
+// Start the game
 const game = new Game();
 game.start();

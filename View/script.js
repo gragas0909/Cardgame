@@ -1,4 +1,4 @@
-// === Constants ===
+
 const ranks = ['Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King'];
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
 
@@ -18,23 +18,7 @@ const cardValues = {
   'King': 10
 };
 
-const cardCoinValues = {
-  'Ace': 10,
-  '2': 2,
-  '3': 3,
-  '4': 4,
-  '5': 5,
-  '6': 6,
-  '7': 7,
-  '8': 8,
-  '9': 9,
-  '10': 10,
-  'Jack': 20,
-  'Queen': 30,
-  'King': 40
-};
 
-// === Base Card Class ===
 class Card {
   constructor(suit, rank) {
     this.suit = suit;
@@ -45,15 +29,10 @@ class Card {
     return cardValues[this.rank];
   }
 
-  getCoinValue() {
-    return cardCoinValues[this.rank];
-  }
-
   getHTML() {
     return `<div class="card">
               <div class="rank">${this.rank}</div>
               <div class="suit">${this.suit}</div>
-              <div class="coin-value">Coins: ${this.getCoinValue()}</div>
             </div>`;
   }
 
@@ -62,16 +41,12 @@ class Card {
   }
 }
 
-// === Special Cards ===
+
 class SpecialCard extends Card {
   constructor(rank, description, longDescription) {
     super('Special', rank);
     this.description = description;
     this.longDescription = longDescription;
-  }
-
-  getCoinValue() {
-    return 0;
   }
 
   getHTML() {
@@ -88,6 +63,7 @@ class SpecialCard extends Card {
     return true;
   }
 }
+
 
 class HiddenCard extends SpecialCard {
   constructor() {
@@ -126,20 +102,6 @@ class AllUpCard extends SpecialCard {
   }
 }
 
-class StealCard extends SpecialCard {
-  constructor() {
-    super('Steal', 'Coin Steal', 'Grants you 150 coins instantly.');
-  }
-
-  getValue() {
-    return 0;
-  }
-
-  getCoinValue() {
-    return 150;
-  }
-}
-
 class WildCard extends SpecialCard {
   constructor() {
     super('Wild', 'Random Value', 'Adds a random value (1-10) to your total.');
@@ -174,7 +136,31 @@ class ChangeCard extends SpecialCard {
   }
 }
 
-// === Deck ===
+class RoyaltyCard extends SpecialCard {
+  constructor() {
+    super('Royalty', 'Instant Win', 'A rare card. 5% chance to win the game instantly when drawn!');
+  }
+
+  getValue() {
+    return 0; 
+  }
+
+  applyEffect(player) {
+    if (Math.random() < 0.05) {
+      document.getElementById('game-status-message').textContent = 'You drew the Royalty card! Instant Win!';
+      document.getElementById('hit-button').disabled = true;
+      document.getElementById('stand-button').disabled = true;
+      document.getElementById('new-game-button').disabled = false;
+
+     
+      player.updateWinCount();
+    } else {
+      document.getElementById('game-status-message').textContent = 'You drew the Royalty card! No instant win this time.';
+    }
+  }
+}
+
+
 class Deck {
   constructor() {
     this.cards = [];
@@ -184,11 +170,11 @@ class Deck {
       }
     }
     this.specialCards = [
-      new StealCard(),
       new WildCard(),
       new HiddenCard(),
       new AllUpCard(),
-      new ChangeCard()
+      new ChangeCard(),
+      new RoyaltyCard() 
     ];
   }
 
@@ -208,7 +194,7 @@ class Deck {
   }
 }
 
-// === Hand ===
+
 class Hand {
   constructor() {
     this.cards = [];
@@ -236,10 +222,6 @@ class Hand {
     return total;
   }
 
-  getTotalCoinValue() {
-    return this.cards.reduce((sum, card) => sum + card.getCoinValue(), 0);
-  }
-
   getHTML() {
     return this.cards.map(card => card.getHTML()).join('');
   }
@@ -256,12 +238,12 @@ class Hand {
   }
 }
 
-// === Player ===
+
 class Player {
   constructor(name) {
     this.name = name;
     this.hand = new Hand();
-    this.coinBalance = 0;
+    this.winCount = 0;
   }
 
   hit(deck) {
@@ -269,10 +251,13 @@ class Player {
     if (!card) card = deck.dealCard();
     this.hand.addCard(card);
 
-    if (card instanceof StealCard) {
-      this.updateCoinBalance(card.getCoinValue());
-    } else if (card instanceof ChangeCard) {
+    if (card instanceof ChangeCard) {
       card.applyEffect(this, deck);
+    }
+
+    
+    if (card instanceof RoyaltyCard) {
+      card.applyEffect(this);
     }
   }
 
@@ -284,17 +269,13 @@ class Player {
     return this.hand.getTotalValue();
   }
 
-  getHandCoinValue() {
-    return this.hand.getTotalCoinValue();
-  }
-
-  updateCoinBalance(amount) {
-    this.coinBalance += amount;
-    document.getElementById('coin-balance').textContent = `Coin Balance: ${this.coinBalance}`;
+  updateWinCount() {
+    this.winCount++;
+    document.getElementById('win-counter').textContent = `Wins: ${this.winCount}`;
   }
 }
 
-// === Dealer ===
+
 class Dealer {
   constructor() {
     this.hand = new Hand();
@@ -308,7 +289,6 @@ class Dealer {
     return this.hand.cards.map((card, i) => i === 0 ? card.getHTML() : `<div class="card">
               <div class="rank">?</div>
               <div class="suit">?</div>
-              <div class="coin-value">Coins: ?</div>
             </div>`).join('');
   }
 
@@ -317,7 +297,7 @@ class Dealer {
   }
 }
 
-// === Game ===
+
 class Game {
   constructor() {
     this.deck = new Deck();
@@ -346,7 +326,6 @@ class Game {
     document.getElementById('dealer-hand-value').textContent = `Total: ${this.dealer.hand.cards[0].getValue()}`;
     document.getElementById('player-cards').innerHTML = this.player.getHandHTML();
     document.getElementById('dealer-cards').innerHTML = this.dealer.getHandHTML();
-    this.player.updateCoinBalance(100);
   }
 
   setupEventListeners() {
@@ -377,10 +356,9 @@ class Game {
     const d = this.dealer.getHandValue();
     if (d > 21 || p > d) {
       document.getElementById('game-status-message').textContent = 'Player wins!';
-      this.player.updateCoinBalance(this.player.getHandCoinValue());
+      this.player.updateWinCount();
     } else if (d > p) {
       document.getElementById('game-status-message').textContent = 'Dealer wins!';
-      this.player.updateCoinBalance(-this.player.getHandCoinValue());
     } else {
       document.getElementById('game-status-message').textContent = 'Push!';
     }
@@ -393,6 +371,6 @@ class Game {
   }
 }
 
-// Start game
+
 const game = new Game();
 game.start();

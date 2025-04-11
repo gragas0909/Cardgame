@@ -13,7 +13,7 @@ loginButton.addEventListener('click', (e) => {
 
         formData.append("username", username);
         formData.append("password", password);
-        xhr.open('POST','login.php', false);
+        xhr.open('POST','../Model/login.php', false);
         xhr.onload = function() {
             if (xhr.responseText === '{"success":true}') {
                 loginMessage.textContent = 'Login successful!';

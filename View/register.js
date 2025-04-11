@@ -15,7 +15,7 @@ registerButton.addEventListener('click', (e) => {
 
             formData.append("username", username);
             formData.append("password", password);
-            xhr.open('POST','register.php', false);
+            xhr.open('POST','../Model/register.php', false);
             xhr.onload = function() {
                 if (xhr.responseText === '{"success":true}') {
                     window.location.href = 'index.php';

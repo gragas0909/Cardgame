@@ -1,10 +1,13 @@
-<!DOCTYPE html>
+<?php
+session_start();
+?>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blackjack</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blackjack</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="top-bar">
@@ -12,14 +15,13 @@
       <p id="win-counter">Wins: 0</p>
     </div>
     <div class="login-redirect">
-      <?php
-      if (isset($_SESSION['username'])) {
-        echo '<a href="logout.php" class="login-btn">Logout</a>';
-      } else {
-        echo '<a href="register.html" class="login-btn">Register</a>';
-        echo '<a href="login.html" class="login-btn">Login</a>';
-      }
-      ?>
+      <?php if (isset($_SESSION['username'])): ?>
+        <span>Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
+        <a href="../Model/logout.php" class="login-btn">Logout</a>
+      <?php else: ?>
+        <a href="register.html" class="login-btn">Register</a>
+        <a href="login.html" class="login-btn">Login</a>
+      <?php endif; ?>
     </div>
   </div>
 

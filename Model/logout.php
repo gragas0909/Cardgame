@@ -1,6 +1,6 @@
 <?php
 session_start();
 session_destroy();
-header('Location:/../View/index.php');
+header('Location:/Cardgame/Cardgame/View/index.php');
 exit;
 ?>

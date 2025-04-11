@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $query = "INSERT INTO users (username, password) VALUES ('$username', '$hashedPassword')";
     $result = mysqli_query($conn, $query);
+    $_SESSION['username'] = $username;
 
     if ($result) {
         $_SESSION['username'] = $username;
